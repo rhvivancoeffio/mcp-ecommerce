@@ -116,11 +116,11 @@ export const CartModal: React.FC<CartModalProps> = ({
                   {/* Product Info - Expanded */}
                   <div className="flex-1 min-w-0 w-full sm:w-auto">
                     <div className="flex items-center gap-2 mb-1">
-                      {item.sellerName && (
+                      {/* {item.sellerName && (
                         <span className="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold">
                           {item.sellerName}
                         </span>
-                      )}
+                      )} */}
                       {item.brand && item.brand.trim() !== '' && (
                         <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-medium">
                           {item.brand}

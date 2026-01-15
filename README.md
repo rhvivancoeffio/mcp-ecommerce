@@ -211,6 +211,350 @@ React widgets built with OpenAI Apps SDK UI:
   - Configure via `appsettings.json`: `ProductRepository:Type = "Vtex"`
   - Supports multiple sellers via `shopKey` parameter
 
+## 🎨 Feature Showcase
+
+This section demonstrates the key features of the MCP E-Commerce platform with real-world examples of LLM interactions and MCP Tool responses.
+
+### 1. Catalog Listing with Filters
+
+**Feature Type**: Product Catalog Widget with Advanced Filtering
+
+**Description**: Displays an interactive product catalog with filtering capabilities including category dropdown, brand dropdown, and price range slider. Products are displayed in a grid layout with images, prices, stock status, and brand badges. Supports skeleton loading states and real-time filtering.
+
+![Catalog Listing with Filters](docs/images/catalog-listing.png)
+
+**Example LLM Interaction**:
+```
+User: "Muéstrame el catálogo de productos de Shopstar"
+
+LLM: "Voy a obtener la lista de tiendas disponibles y luego mostrar el catálogo de Shopstar."
+```
+
+**MCP Tool Call**:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_list",
+    "arguments": {
+      "shopKey": "mercury",
+      "page": 1,
+      "pageSize": 20
+    }
+  }
+}
+```
+
+**MCP Tool Result**:
+```json
+{
+  "_meta": {
+    "openai/outputTemplate": "ui://widget/catalog.html",
+    "openai/widgetAccessible": true,
+    "openai/resultCanProduceWidget": true
+  },
+  "structuredContent": {
+    "status": "completed",
+    "products": [
+      {
+        "id": "1480151",
+        "name": "IPHONE 15 PRO MAX 256GB eSIM - BLUE TITANIUM + CARGADOR 20W",
+        "description": "IPHONE 15 PRO MAX 256GB eSIM Ø Pantalla Super Retina XDR OLED²...",
+        "price": 7899.00,
+        "sku": "1480151",
+        "category": "Smartphones",
+        "brand": "APPLE",
+        "sellerName": "Shopstar",
+        "shopKey": "mercury",
+        "imageUrls": [
+          "https://mercury.vtexcommercestable.com.br/arquivos/ids/123456-500-auto.jpg"
+        ],
+        "stock": 10,
+        "features": ["Pantalla Super Retina XDR", "Cámara 48MP", "Chip A17 Pro"]
+      }
+    ],
+    "totalCount": 7,
+    "page": 1,
+    "pageSize": 20,
+    "sellerName": "Shopstar",
+    "shopKey": "mercury"
+  }
+}
+```
+
+---
+
+### 2. Product Detail Modal
+
+**Feature Type**: Product Detail View with Image Carousel
+
+**Description**: Displays detailed product information in a modal overlay, including multiple product images in a carousel, brand and seller badges, full product description, price, stock availability, and an "Agregar al Carrito" button. The modal is optimized for visibility within ChatGPT's interface.
+
+![Product Detail Modal](docs/images/product-detail-modal.png)
+
+**Example LLM Interaction**:
+```
+User: "Muéstrame los detalles del iPhone 15 Pro Max de 256GB"
+
+LLM: "Voy a mostrar los detalles completos del producto incluyendo imágenes y especificaciones."
+```
+
+**MCP Tool Call**:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_list",
+    "arguments": {
+      "shopKey": "mercury",
+      "searchTerm": "IPHONE 15 PRO MAX 256GB"
+    }
+  }
+}
+```
+
+**MCP Tool Result**:
+```json
+{
+  "_meta": {
+    "openai/outputTemplate": "ui://widget/catalog.html",
+    "openai/widgetAccessible": true,
+    "openai/resultCanProduceWidget": true
+  },
+  "structuredContent": {
+    "status": "completed",
+    "products": [
+      {
+        "id": "1480151",
+        "name": "IPHONE 15 PRO MAX 256GB eSIM - BLUE TITANIUM + CARGADOR 20W",
+        "description": "20609374994, WEWORK TECNOLOGÍA EIRL IPHONE 15 PRO MAX 256GB eSIM Ø Pantalla Super Retina XDR OLED² de 6,7 pulgadas 120Hz con tecnología ProMotion Ø Cámara Principal 48MP para fotografías de súper alta resolución Ø Cámara Selfie 12MP Ø Forjado en titanio, diseñado para marcar la diferencia Ø Chip A17 Pro que cambia las reglas del juego...",
+        "price": 7899.00,
+        "sku": "1480151",
+        "category": "Smartphones",
+        "brand": "APPLE",
+        "sellerName": "Shopstar",
+        "shopKey": "mercury",
+        "imageUrls": [
+          "https://mercury.vtexcommercestable.com.br/arquivos/ids/123456-500-auto.jpg",
+          "https://mercury.vtexcommercestable.com.br/arquivos/ids/123457-500-auto.jpg"
+        ],
+        "stock": 10
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 3. Shopping Cart Modal
+
+**Feature Type**: Shopping Cart Overlay with Order Summary
+
+**Description**: Displays a modal overlay showing the current shopping cart contents with product details, quantity selectors, item totals, and a complete order summary including subtotal, tax, shipping, and final total. Includes a "Pagar" (Pay) button to proceed with checkout.
+
+![Shopping Cart Modal](docs/images/cart-modal.png)
+
+**Example LLM Interaction**:
+```
+User: "Muéstrame mi carrito de compras"
+
+LLM: "Voy a obtener el estado actual de tu carrito y mostrártelo."
+```
+
+**MCP Tool Call**:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "get_cart",
+    "arguments": {
+      "cartId": "e840e8ea-1234-5678-9abc-def012345678"
+    }
+  }
+}
+```
+
+**MCP Tool Result**:
+```json
+{
+  "_meta": {
+    "openai/outputTemplate": "ui://widget/cart.html",
+    "openai/widgetAccessible": true,
+    "openai/resultCanProduceWidget": true,
+    "openai/widgetSessionId": "e840e8ea-1234-5678-9abc-def012345678"
+  },
+  "structuredContent": {
+    "status": "completed",
+    "cartId": "e840e8ea-1234-5678-9abc-def012345678",
+    "items": [
+      {
+        "productId": "1480151",
+        "productName": "IPHONE 15 PRO MAX 256GB eSIM - BLUE TITANIUM + CARGADOR 20W",
+        "productSku": "1480151",
+        "quantity": 1,
+        "unitPrice": 7899.00,
+        "totalPrice": 7899.00,
+        "imageUrl": "https://mercury.vtexcommercestable.com.br/arquivos/ids/123456-500-auto.jpg",
+        "category": "Smartphones",
+        "brand": "APPLE",
+        "sellerName": "Shopstar",
+        "shopKey": "mercury"
+      }
+    ],
+    "subTotal": 7899.00,
+    "tax": 789.90,
+    "shipping": 0.00,
+    "total": 8688.90,
+    "totalItems": 1
+  }
+}
+```
+
+---
+
+### 4. Shopping Cart Widget
+
+**Feature Type**: Dedicated Cart Widget with Pricing Breakdown
+
+**Description**: A standalone widget displaying the shopping cart with a clean, modern design. Shows cart header with item count, product cards with images and details, quantity selectors, item totals, and a comprehensive pricing breakdown (subtotal, tax, shipping, total). Features a prominent "Pagar" button for checkout completion.
+
+![Shopping Cart Widget](docs/images/cart-widget.png)
+
+**Example LLM Interaction**:
+```
+User: "Abre el widget del carrito para ver mi resumen de compra"
+
+LLM: "Voy a abrir el widget del carrito con todos los detalles de tu compra."
+```
+
+**MCP Tool Call**:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "open_cart_widget",
+    "arguments": {
+      "cartId": "e840e8ea-1234-5678-9abc-def012345678"
+    }
+  }
+}
+```
+
+**MCP Tool Result**:
+```json
+{
+  "_meta": {
+    "openai/outputTemplate": "ui://widget/cart.html",
+    "openai/widgetAccessible": true,
+    "openai/resultCanProduceWidget": true,
+    "openai/widgetSessionId": "e840e8ea-1234-5678-9abc-def012345678"
+  },
+  "structuredContent": {
+    "status": "completed",
+    "cartId": "e840e8ea-1234-5678-9abc-def012345678",
+    "items": [
+      {
+        "productId": "1480151",
+        "productName": "IPHONE 15 PRO MAX 256GB eSIM - BLUE TITANIUM + CARGADOR 20W",
+        "productSku": "1480151",
+        "quantity": 1,
+        "unitPrice": 7899.00,
+        "totalPrice": 7899.00,
+        "imageUrl": "https://mercury.vtexcommercestable.com.br/arquivos/ids/123456-500-auto.jpg",
+        "category": "Smartphones",
+        "brand": "APPLE"
+      }
+    ],
+    "subTotal": 7899.00,
+    "tax": 789.90,
+    "shipping": 0.00,
+    "total": 8688.90,
+    "totalItems": 1
+  }
+}
+```
+
+---
+
+### 5. Add to Cart
+
+**Feature Type**: Cart Management - Add Products
+
+**Description**: Adds one or more products to the shopping cart. Creates a new cart session if no cartId is provided, or updates an existing cart. Returns the updated cart state with cartId for session persistence across multiple interactions.
+
+**Example LLM Interaction**:
+```
+User: "Agrega 1 iPhone 15 Pro Max de 256GB al carrito"
+
+LLM: "Voy a agregar el iPhone 15 Pro Max al carrito."
+```
+
+**MCP Tool Call**:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "add_to_cart",
+    "arguments": {
+      "items": [
+        {
+          "productId": "1480151",
+          "productName": "IPHONE 15 PRO MAX 256GB eSIM - BLUE TITANIUM + CARGADOR 20W",
+          "productSku": "1480151",
+          "quantity": 1,
+          "unitPrice": 7899.00,
+          "imageUrl": "https://mercury.vtexcommercestable.com.br/arquivos/ids/123456-500-auto.jpg",
+          "category": "Smartphones",
+          "brand": "APPLE"
+        }
+      ],
+      "shopKey": "mercury"
+    }
+  }
+}
+```
+
+**MCP Tool Result**:
+```json
+{
+  "_meta": {
+    "openai/widgetSessionId": "e840e8ea-1234-5678-9abc-def012345678"
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "Carrito e840e8ea-1234-5678-9abc-def012345678 ahora tiene 1 artículo(s)."
+    }
+  ],
+  "structuredContent": {
+    "cartId": "e840e8ea-1234-5678-9abc-def012345678",
+    "items": [
+      {
+        "productId": "1480151",
+        "productName": "IPHONE 15 PRO MAX 256GB eSIM - BLUE TITANIUM + CARGADOR 20W",
+        "productSku": "1480151",
+        "quantity": 1,
+        "unitPrice": 7899.00,
+        "totalPrice": 7899.00,
+        "imageUrl": "https://mercury.vtexcommercestable.com.br/arquivos/ids/123456-500-auto.jpg",
+        "category": "Smartphones",
+        "brand": "APPLE",
+        "sellerName": "Shopstar",
+        "shopKey": "mercury"
+      }
+    ],
+    "subTotal": 7899.00,
+    "tax": 789.90,
+    "shipping": 0.00,
+    "total": 8688.90,
+    "totalItems": 1
+  }
+}
+```
+
+---
+
 ## 🔧 Development
 
 ### Build Commands
