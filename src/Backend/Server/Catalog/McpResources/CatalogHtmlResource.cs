@@ -1,13 +1,8 @@
 using System.ComponentModel;
 using System.Text.Json.Nodes;
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using MediatR;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using Application.Catalog.Queries;
-using Domain.Sellers;
 using Server.Helpers;
 using Server.Common.Mcp.Attributes;
 
@@ -17,20 +12,10 @@ namespace Server.Catalog.McpResources;
 public sealed class CatalogHtmlResource
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<CatalogHtmlResource> _logger;
-    private readonly IMediator _mediator;
-    private readonly ISellerRepository _sellerRepository;
 
-    public CatalogHtmlResource(
-        IHttpContextAccessor httpContextAccessor, 
-        ILogger<CatalogHtmlResource> logger,
-        IMediator mediator,
-        ISellerRepository sellerRepository)
+    public CatalogHtmlResource(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
-        _logger = logger;
-        _mediator = mediator;
-        _sellerRepository = sellerRepository;
     }
 
     // Note: Resources are registered manually in Program.cs - no [McpServerResource] needed
@@ -40,7 +25,7 @@ public sealed class CatalogHtmlResource
         MimeType = "text/html+skybridge",
         InvokingMessage = "Cargando catálogo...",
         InvokedMessage = "Catálogo cargado.")]
-    public async Task<ReadResourceResult> Catalog(CancellationToken cancellationToken = default)
+    public ReadResourceResult Catalog(CancellationToken cancellationToken = default)
     {
         // Obtener la URL base del servidor desde HttpContext
         var httpContext = _httpContextAccessor.HttpContext;
@@ -61,54 +46,8 @@ public sealed class CatalogHtmlResource
         // Construir los links CSS
         var cssLinksHtml = $"<link rel=\"stylesheet\" href=\"{catalogCssUrl}\"><link rel=\"stylesheet\" href=\"{indexCssUrl}\">";
 
-        // Obtener el primer seller disponible por defecto (para recursos estáticos)
-        var sellers = await _sellerRepository.GetAllAsync(cancellationToken);
-        var defaultSeller = sellers.FirstOrDefault();
-        
-        List<string> categories;
-        List<string> brands;
-        
-        if (defaultSeller == null)
-        {
-            _logger.LogWarning("[CatalogHtmlResource] No sellers available, returning empty categories and brands");
-            categories = new List<string>();
-            brands = new List<string>();
-        }
-        else
-        {
-            // Obtener categorías y marcas disponibles usando el shopKey del primer seller
-            var categoriesQuery = new GetAvailableCategoriesQuery(defaultSeller.ShopKey);
-            var categoriesResponse = await _mediator.Send(categoriesQuery, cancellationToken);
-            
-            var brandsQuery = new GetAvailableBrandsQuery(defaultSeller.ShopKey);
-            var brandsResponse = await _mediator.Send(brandsQuery, cancellationToken);
-            
-            categories = categoriesResponse.Categories.ToList();
-            brands = brandsResponse.Brands.ToList();
-        }
-
-        // Preparar datos iniciales para el widget
-        var initialData = new
-        {
-            categories = categories,
-            brands = brands
-        };
-
-        // Serializar datos iniciales a JSON (escapar para HTML/JavaScript)
-        var initialDataJson = JsonSerializer.Serialize(initialData, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
-        var escapedInitialDataJson = initialDataJson
-            .Replace("\\", "\\\\")
-            .Replace("</script>", "<\\/script>")
-            .Replace("\"", "\\\"");
-        
-        _logger.LogInformation("[CatalogHtmlResource] Generated URLs - Catalog CSS: {CatalogCss}, Index CSS: {IndexCss}, JS: {JsUrl}", catalogCssUrl, indexCssUrl, catalogJsUrl);
-        _logger.LogInformation("[CatalogHtmlResource] Loaded {CategoryCount} categories and {BrandCount} brands", categories.Count, brands.Count);
-
         // Generar HTML estático del widget
-        var htmlContent = $"<!DOCTYPE html><html lang=\"en\" data-theme=\"light\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Catalog Widget</title>{cssLinksHtml}</head><body><div id=\"root\"></div><script>window.openai = window.openai || {{}};window.openai.initialData = window.openai.initialData || {escapedInitialDataJson};</script><script type=\"module\" src=\"{catalogJsUrl}\"></script></body></html>";
+        var htmlContent = $"<!DOCTYPE html><html lang=\"en\" data-theme=\"light\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Catalog Widget</title>{cssLinksHtml}</head><body><div id=\"root\"></div><script>window.openai = window.openai || {{}};</script><script type=\"module\" src=\"{catalogJsUrl}\"></script></body></html>";
 
         // Crear metadata para OpenAI
         var meta = new JsonObject
