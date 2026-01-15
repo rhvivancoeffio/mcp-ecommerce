@@ -1,0 +1,7 @@
+/* Tailwind directives - required for Apps SDK UI @layer components */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Apps SDK UI CSS after Tailwind directives */
+@import "@openai/apps-sdk-ui/css";

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Comparison Widget</title>
+    <link rel="stylesheet" href="/widgets/product-comparison-[hash].css">
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        // Los datos se inyectarán desde el MCP Resource
+        window.openai = window.openai || {};
+        window.openai.toolOutput = window.openai.toolOutput || {
+            structuredContent: {
+                products: [],
+                comparisonData: {}
+            }
+        };
+    </script>
+    <script src="/widgets/product-comparison-[hash].js"></script>
+</body>
+</html>

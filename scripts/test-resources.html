@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test MCP Resources</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .resource-test {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test MCP Resources</h1>
+    <p>Servidor: <code>http://localhost:4444</code></p>
+
+    <div class="resource-test">
+        <h2>Catalog HTML Resource</h2>
+        <p>URI: <code>ui://widget/catalog.html</code></p>
+        <button onclick="testCatalogResource()">Cargar Catalog Resource</button>
+        <div id="catalog-error" class="error"></div>
+        <iframe id="catalog-frame" style="display: none;"></iframe>
+    </div>
+
+    <div class="resource-test">
+        <h2>Product Comparison HTML Resource</h2>
+        <p>URI: <code>ui://widget/product-comparison.html</code></p>
+        <button onclick="testComparisonResource()">Cargar Comparison Resource</button>
+        <div id="comparison-error" class="error"></div>
+        <iframe id="comparison-frame" style="display: none;"></iframe>
+    </div>
+
+    <div class="resource-test">
+        <h2>MCP Endpoint Test</h2>
+        <p>Endpoint: <code>http://localhost:4444/mcp</code></p>
+        <button onclick="testMcpEndpoint()">Probar MCP Endpoint</button>
+        <pre id="mcp-result" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://localhost:4444';
+
+        async function testCatalogResource() {
+            const errorDiv = document.getElementById('catalog-error');
+            const frame = document.getElementById('catalog-frame');
+            errorDiv.textContent = '';
+            
+            try {
+                // Simular llamada MCP Resource
+                // En producción, esto se haría a través del cliente MCP
+                const response = await fetch(`${SERVER_URL}/mcp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'resources/read',
+                        params: {
+                            uri: 'ui://widget/catalog.html'
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.result?.contents?.[0]?.text) {
+                        frame.srcdoc = data.result.contents[0].text;
+                        frame.style.display = 'block';
+                    } else {
+                        errorDiv.textContent = 'No se encontró contenido HTML en la respuesta';
+                    }
+                } else {
+                    errorDiv.textContent = `Error: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                errorDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testComparisonResource() {
+            const errorDiv = document.getElementById('comparison-error');
+            const frame = document.getElementById('comparison-frame');
+            errorDiv.textContent = '';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/mcp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 2,
+                        method: 'resources/read',
+                        params: {
+                            uri: 'ui://widget/product-comparison.html'
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.result?.contents?.[0]?.text) {
+                        frame.srcdoc = data.result.contents[0].text;
+                        frame.style.display = 'block';
+                    } else {
+                        errorDiv.textContent = 'No se encontró contenido HTML en la respuesta';
+                    }
+                } else {
+                    errorDiv.textContent = `Error: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                errorDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testMcpEndpoint() {
+            const resultDiv = document.getElementById('mcp-result');
+            resultDiv.textContent = 'Probando...';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/mcp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 3,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2024-11-05',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'test-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
