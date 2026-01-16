@@ -5,9 +5,9 @@ using MediatR;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using Application.Catalog.Queries;
+using Application.Sellers.Queries;
 using Server.Common.Mcp.Attributes;
 using Server.Helpers;
-using Domain.Sellers;
 
 namespace Server.Catalog.McpTools;
 
@@ -15,12 +15,10 @@ namespace Server.Catalog.McpTools;
 public sealed class ProductComparisonTool
 {
     private readonly IMediator _mediator;
-    private readonly ISellerRepository _sellerRepository;
 
-    public ProductComparisonTool(IMediator mediator, ISellerRepository sellerRepository)
+    public ProductComparisonTool(IMediator mediator)
     {
         _mediator = mediator;
-        _sellerRepository = sellerRepository;
     }
 
     /// <summary>
@@ -47,11 +45,12 @@ public sealed class ProductComparisonTool
         CancellationToken cancellationToken = default)
     {
         var query = new CompareProductsQuery(productIds, shopKey);
-        var response = await _mediator.Send(query);
+        var response = await _mediator.Send(query, cancellationToken);
 
-        // Get seller information
-        var seller = await _sellerRepository.GetByShopKeyAsync(shopKey, cancellationToken);
-        var sellerName = seller?.Name ?? string.Empty;
+        // Get seller information using query
+        var sellerQuery = new GetSellerByShopKeyQuery(shopKey);
+        var sellerResponse = await _mediator.Send(sellerQuery, cancellationToken);
+        var sellerName = sellerResponse.Seller?.Name ?? string.Empty;
 
         var productsArray = new JsonArray();
         foreach (var p in response.Products)

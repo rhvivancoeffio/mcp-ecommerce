@@ -31,7 +31,7 @@ public static class DependencyInjection
         services.AddScoped<OpenCartWidgetTool>();
         
         // Register MCP Resources (necesitan IHttpContextAccessor para obtener la URL base)
-        // Resources are registered as scoped because they use scoped services (IMediator, ISellerRepository, etc.)
+        // Resources are registered as scoped (some may use scoped services in the future)
         services.AddScoped<CatalogHtmlResource>();
         services.AddScoped<ProductComparisonHtmlResource>();
         services.AddScoped<CartHtmlResource>();

@@ -3,9 +3,9 @@ using MediatR;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using Application.Checkout.Cart.Commands;
+using Application.Sellers.Queries;
 using System.Text.Json.Nodes;
 using Server.Common.Mcp.Attributes;
-using Domain.Sellers;
 using CartItemInput = Application.Checkout.Cart.Commands.CartItemInput;
 
 namespace Server.Checkout.McpTools;
@@ -13,12 +13,10 @@ namespace Server.Checkout.McpTools;
 public sealed class AddToCartTool
 {
     private readonly IMediator _mediator;
-    private readonly ISellerRepository _sellerRepository;
 
-    public AddToCartTool(IMediator mediator, ISellerRepository sellerRepository)
+    public AddToCartTool(IMediator mediator)
     {
         _mediator = mediator;
-        _sellerRepository = sellerRepository;
     }
 
     /// <summary>
@@ -39,12 +37,13 @@ public sealed class AddToCartTool
         [Description("Shop key (string, optional). Get this value by calling 'get_available_sellers' tool first. Used to identify the seller/store. Examples: 'mercury', 'coolbox', 'promart', 'plazavea', 'oechsle', 'wong', 'metrope'.")] string? shopKey = null,
         CancellationToken cancellationToken = default)
     {
-        // Get seller information if shopKey is provided
+        // Get seller information if shopKey is provided using query
         string? sellerName = null;
         if (!string.IsNullOrEmpty(shopKey))
         {
-            var seller = await _sellerRepository.GetByShopKeyAsync(shopKey, cancellationToken);
-            sellerName = seller?.Name;
+            var sellerQuery = new GetSellerByShopKeyQuery(shopKey);
+            var sellerResponse = await _mediator.Send(sellerQuery, cancellationToken);
+            sellerName = sellerResponse.Seller?.Name;
         }
 
         // Convert CartItemInput[] to List<CartItemInput> and add shopKey/sellerName to metadata

@@ -3,11 +3,11 @@ using MediatR;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using Application.Catalog.Queries;
+using Application.Sellers.Queries;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Server.Common.Mcp.Attributes;
 using Server.Helpers;
-using Domain.Sellers;
 
 namespace Server.Catalog.McpTools;
 
@@ -15,12 +15,10 @@ namespace Server.Catalog.McpTools;
 public sealed class CatalogListTool
 {
     private readonly IMediator _mediator;
-    private readonly ISellerRepository _sellerRepository;
 
-    public CatalogListTool(IMediator mediator, ISellerRepository sellerRepository)
+    public CatalogListTool(IMediator mediator)
     {
         _mediator = mediator;
-        _sellerRepository = sellerRepository;
     }
 
     /// <summary>
@@ -51,11 +49,12 @@ public sealed class CatalogListTool
         CancellationToken cancellationToken = default)
     {
         var query = new GetCatalogListQuery(shopKey, category, searchTerm, page, pageSize);
-        var response = await _mediator.Send(query);
+        var response = await _mediator.Send(query, cancellationToken);
 
-        // Get seller information
-        var seller = await _sellerRepository.GetByShopKeyAsync(shopKey, cancellationToken);
-        var sellerName = seller?.Name ?? string.Empty;
+        // Get seller information using query
+        var sellerQuery = new GetSellerByShopKeyQuery(shopKey);
+        var sellerResponse = await _mediator.Send(sellerQuery, cancellationToken);
+        var sellerName = sellerResponse.Seller?.Name ?? string.Empty;
 
         var productsArray = new JsonArray();
         foreach (var p in response.Products)
